@@ -17,7 +17,9 @@
     </div>
 
     <p class="score-detail">
-        {{ matched|length }} of {{ matched|length + missing|length }} keywords matched
+        {{ matched.must_have|length }}/{{ matched.must_have|length + missing.must_have|length }} must-have,
+        {{ matched.nice_to_have|length }}/{{ matched.nice_to_have|length + missing.nice_to_have|length }} nice-to-have
+        (must-have keywords count 3&times; more)
     </p>
 </div>
 
@@ -25,19 +27,27 @@
     <div class="card">
         <h2>Matched Keywords</h2>
         <div class="keyword-list">
-            {% for kw in matched %}
-            <span class="keyword keyword-match">{{ kw }}</span>
+            {% for kw in matched.must_have %}
+            <span class="keyword keyword-match keyword-must-have">{{ kw }}</span>
+            {% endfor %}
+            {% for kw in matched.nice_to_have %}
+            <span class="keyword keyword-match keyword-nice-to-have">{{ kw }}</span>
             {% endfor %}
         </div>
+        <p class="tier-legend">Solid = must-have (3 pts) · Dashed = nice-to-have (1 pt)</p>
     </div>
 
     <div class="card">
         <h2>Missing Keywords</h2>
         <div class="keyword-list">
-            {% for kw in missing %}
-            <span class="keyword keyword-missing">{{ kw }}</span>
+            {% for kw in missing.must_have %}
+            <span class="keyword keyword-missing keyword-must-have">{{ kw }}</span>
+            {% endfor %}
+            {% for kw in missing.nice_to_have %}
+            <span class="keyword keyword-missing keyword-nice-to-have">{{ kw }}</span>
             {% endfor %}
         </div>
+        <p class="tier-legend">Solid = must-have (3 pts) · Dashed = nice-to-have (1 pt)</p>
     </div>
 </div>
 

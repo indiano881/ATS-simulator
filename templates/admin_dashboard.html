@@ -32,7 +32,7 @@
                 <li><strong>Text extraction</strong> — PDF text is pulled out page-by-page with pdfplumber.</li>
                 <li><strong>Normalization</strong> — Both the CV text and each keyword are lowercased, special characters (except <code>/</code> <code>+</code> <code>#</code>) are replaced with spaces, and whitespace is collapsed.</li>
                 <li><strong>Substring matching</strong> — Each keyword is checked as a substring of the normalized CV text. No stemming, no synonyms, no fuzzy matching.</li>
-                <li><strong>Score</strong> — <code>matched keywords &divide; total keywords &times; 100</code>, rounded to one decimal.</li>
+                <li><strong>Weighted score</strong> — Must-have keywords are worth <strong>3 points</strong>, nice-to-have worth <strong>1 point</strong>. Formula: <code>(must_matched&times;3 + nice_matched&times;1) &divide; (must_total&times;3 + nice_total&times;1) &times; 100</code>, rounded to one decimal.</li>
             </ol>
             <h3>Score thresholds</h3>
             <table class="table">
@@ -46,13 +46,13 @@
             <h3>Keywords per job</h3>
             <ul>
                 {% for id, job in job_ads.items() %}
-                <li><strong>{{ job.title }}</strong> ({{ job.company }}) — {{ job.keywords|length }} keywords</li>
+                <li><strong>{{ job.title }}</strong> ({{ job.company }}) — {{ job.keywords.must_have|length }} must-have + {{ job.keywords.nice_to_have|length }} nice-to-have</li>
                 {% endfor %}
             </ul>
             <h3>Limitations</h3>
             <ul>
                 <li>Exact substring only — "React.js" in a CV won't match keyword <code>react</code> if the dot is stripped differently.</li>
-                <li>All keywords are weighted equally (no priority tiers).</li>
+                <li>Only two weight tiers (must-have 3 pts, nice-to-have 1 pt) — real systems use more granular weighting.</li>
                 <li>No semantic understanding — "built web UIs" won't match <code>frontend</code>.</li>
             </ul>
         </div>

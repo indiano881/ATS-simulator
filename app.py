@@ -24,8 +24,19 @@ app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB limit
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "workshop2024")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "01071988")
 DATABASE = os.path.join(os.path.dirname(__file__), "ats.db")
+
+
+def parse_tiered_keywords(json_str):
+    """Parse a JSON string that may be a flat list (old) or a tiered dict (new).
+
+    Always returns {"must_have": [...], "nice_to_have": [...]}.
+    """
+    data = json.loads(json_str)
+    if isinstance(data, list):
+        return {"must_have": data, "nice_to_have": []}
+    return data
 
 
 def get_db():
@@ -96,7 +107,7 @@ def submit():
         flash(f"Error processing PDF: {e}", "error")
         return redirect(url_for("index"))
 
-    # Store in database
+    # Store in database (matched/missing stored as tiered dicts)
     conn = get_db()
     cursor = conn.execute(
         """INSERT INTO candidates (name, job_id, pdf_filename, cv_text, score,
@@ -133,13 +144,15 @@ def results(candidate_id):
         return redirect(url_for("index"))
 
     job_ad = get_job_ad(candidate["job_id"])
+    matched = parse_tiered_keywords(candidate["matched_keywords"])
+    missing = parse_tiered_keywords(candidate["missing_keywords"])
 
     return render_template(
         "results.html",
         candidate=candidate,
         job_ad=job_ad,
-        matched=json.loads(candidate["matched_keywords"]),
-        missing=json.loads(candidate["missing_keywords"]),
+        matched=matched,
+        missing=missing,
         suggestions=json.loads(candidate["suggestions"]),
     )
 
@@ -202,9 +215,10 @@ def admin_candidate(candidate_id):
         return redirect(url_for("admin_dashboard"))
 
     job_ad = get_job_ad(candidate["job_id"])
-    matched = json.loads(candidate["matched_keywords"])
-    missing = json.loads(candidate["missing_keywords"])
-    highlighted_text = highlight_keywords_in_text(candidate["cv_text"], matched)
+    matched = parse_tiered_keywords(candidate["matched_keywords"])
+    missing = parse_tiered_keywords(candidate["missing_keywords"])
+    all_matched = matched["must_have"] + matched["nice_to_have"]
+    highlighted_text = highlight_keywords_in_text(candidate["cv_text"], all_matched)
 
     return render_template(
         "admin_candidate.html",
