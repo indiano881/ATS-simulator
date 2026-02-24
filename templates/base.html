@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ATS Scanner{% endblock %} — Workshop Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="disclaimer-banner">
+        ⚠ This is an educational demo — not a real recruitment system
+    </div>
+
+    <nav class="navbar">
+        <a href="{{ url_for('index') }}" class="nav-brand">ATS Scanner</a>
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Upload CV</a>
+            <a href="{{ url_for('admin_login') }}">Admin</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>ATS Scanner Workshop Demo — For educational purposes only</p>
+    </footer>
+</body>
+</html>

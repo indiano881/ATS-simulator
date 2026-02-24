@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ candidate.name }} — Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="candidate-header">
+        <div>
+            <h1>{{ candidate.name }}</h1>
+            <p class="subtitle">Applied for: <strong>{{ job_ad.title }}</strong> at {{ job_ad.company }}</p>
+        </div>
+        <span class="score-badge score-badge-lg
+            {% if candidate.score >= 70 %}score-high
+            {% elif candidate.score >= 40 %}score-medium
+            {% else %}score-low{% endif %}">
+            {{ candidate.score }}%
+        </span>
+    </div>
+
+    <p class="score-detail">
+        {{ matched|length }} of {{ matched|length + missing|length }} keywords matched
+    </p>
+</div>
+
+<div class="two-columns">
+    <div class="card">
+        <h2>Matched Keywords</h2>
+        <div class="keyword-list">
+            {% for kw in matched %}
+            <span class="keyword keyword-match">{{ kw }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Missing Keywords</h2>
+        <div class="keyword-list">
+            {% for kw in missing %}
+            <span class="keyword keyword-missing">{{ kw }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>CV Text (with highlighted matches)</h2>
+    <div class="cv-text">{{ highlighted_text|safe }}</div>
+</div>
+
+<div class="actions">
+    <a href="{{ url_for('admin_pdf', candidate_id=candidate.id) }}" class="btn btn-primary" target="_blank">View Original PDF</a>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

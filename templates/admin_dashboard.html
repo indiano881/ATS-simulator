@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="dashboard-header">
+        <h1>Candidates Dashboard</h1>
+        <div class="dashboard-actions">
+            <form action="{{ url_for('admin_delete_all') }}" method="POST"
+                  onsubmit="return confirm('Delete ALL candidates and uploaded files? This cannot be undone.')">
+                <button type="submit" class="btn btn-danger btn-sm">Delete All</button>
+            </form>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <span>Filter by job:</span>
+        <a href="{{ url_for('admin_dashboard', job='all') }}"
+           class="btn btn-sm {% if current_filter == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+        {% for id, job in job_ads.items() %}
+        <a href="{{ url_for('admin_dashboard', job=id) }}"
+           class="btn btn-sm {% if current_filter == id %}btn-primary{% else %}btn-secondary{% endif %}">{{ job.title }}</a>
+        {% endfor %}
+    </div>
+
+    {% if candidates %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Job Position</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in candidates %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ c.name }}</td>
+                    <td>{{ job_ads[c.job_id].title if c.job_id in job_ads else c.job_id }}</td>
+                    <td>
+                        <span class="score-badge
+                            {% if c.score >= 70 %}score-high
+                            {% elif c.score >= 40 %}score-medium
+                            {% else %}score-low{% endif %}">
+                            {{ c.score }}%
+                        </span>
+                    </td>
+                    <td>{{ c.created_at }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_candidate', candidate_id=c.id) }}" class="btn btn-sm btn-primary">View</a>
+                        <a href="{{ url_for('admin_pdf', candidate_id=c.id) }}" class="btn btn-sm btn-secondary" target="_blank">PDF</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No candidates yet. Share the upload link with participants!</p>
+    {% endif %}
+</div>
+{% endblock %}

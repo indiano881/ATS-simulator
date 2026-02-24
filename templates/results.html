@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Your Results{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Results for {{ candidate.name }}</h1>
+    <p class="subtitle">Applied for: <strong>{{ job_ad.title }}</strong> at {{ job_ad.company }}</p>
+
+    <div class="score-section">
+        <div class="score-label">Compatibility Score</div>
+        <div class="score-bar-container">
+            <div class="score-bar
+                {% if candidate.score >= 70 %}score-high
+                {% elif candidate.score >= 40 %}score-medium
+                {% else %}score-low{% endif %}"
+                style="width: {{ candidate.score }}%">
+                {{ candidate.score }}%
+            </div>
+        </div>
+        <p class="score-detail">
+            {{ matched|length }} of {{ matched|length + missing|length }} keywords matched
+        </p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Matched Keywords</h2>
+    {% if matched %}
+    <div class="keyword-list">
+        {% for kw in matched %}
+        <span class="keyword keyword-match">{{ kw }}</span>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No keywords matched.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Missing Keywords</h2>
+    {% if missing %}
+    <div class="keyword-list">
+        {% for kw in missing %}
+        <span class="keyword keyword-missing">{{ kw }}</span>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>All keywords matched!</p>
+    {% endif %}
+</div>
+
+{% if suggestions %}
+<div class="card">
+    <h2>Suggestions</h2>
+    <ul class="suggestions-list">
+        {% for suggestion in suggestions %}
+        <li>{{ suggestion }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="actions">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Upload Another CV</a>
+</div>
+{% endblock %}
