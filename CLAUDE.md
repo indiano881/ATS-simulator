@@ -1,55 +1,31 @@
-# ATS Scanner — Workshop Demo
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What This Is
 
 Educational ATS-like CV scanner for a 1-hour workshop. **Not a real recruitment system.**
 
-## Quick Start
+## Commands
 
-```bash
-pip install -r requirements.txt
-python app.py
-# Open http://localhost:5000
-```
+- **Run:** `python app.py` (serves at http://localhost:5000, auto-creates `ats.db`)
+- **Install deps:** `pip install -r requirements.txt`
+- No test suite or linter is configured.
 
-## Tech Stack
+## Architecture
 
-- Python 3 + Flask + Jinja2 templates + vanilla CSS
-- SQLite (via `sqlite3`) — database file: `ats.db`
-- `pdfplumber` for PDF text extraction
-- TF-IDF-style keyword matching (no AI/LLM)
+Single-process Flask app with SQLite. Three Python modules, six Jinja2 templates, one CSS file.
 
-## Project Structure
+**Data flow:** Upload PDF → `scanner.scan_cv()` extracts text via pdfplumber, does substring keyword matching, computes score as percentage of matched keywords → result stored in SQLite `candidates` table → redirect to results page.
 
-- `app.py` — Flask app with all routes (public + admin)
-- `scanner.py` — PDF extraction + keyword matching logic
-- `job_ads.py` — Predefined job ad data (Frontend Dev + Marketing Coordinator)
-- `schema.sql` — SQLite table definition
-- `templates/` — Jinja2 templates (base, index, results, admin_*)
-- `static/style.css` — Single stylesheet
-- `uploads/` — Stored PDF files (gitignored)
-
-## Key Routes
-
-- `GET /` — Upload form (name + PDF + job selector)
-- `POST /submit` — Process CV, store result, redirect to results
-- `GET /results/<id>` — Score breakdown for a candidate
-- `GET/POST /admin` — Admin login (password: env `ADMIN_PASSWORD`, default `workshop2024`)
-- `GET /admin/dashboard` — Ranked candidates table
-- `GET /admin/candidate/<id>` — Candidate detail with highlighted CV text
-
-## How Matching Works
-
-1. Extract text from PDF via `pdfplumber`
-2. Normalize text (lowercase, strip punctuation)
-3. Check which curated job keywords appear in CV text (substring match)
-4. Score = (matched / total) * 100
-5. Generate suggestions for missing keywords
+**Key design decisions:**
+- Job ads are hardcoded in `job_ads.py` (not in the database): Embark Studios Fullstack Engineer + SS&C Eze Project Manager. To add a new job, add an entry to the `JOB_ADS` dict with an `id`, `title`, `company`, `description`, and `keywords` list.
+- `candidates` table stores `matched_keywords`, `missing_keywords`, and `suggestions` as JSON-serialized TEXT columns. Always use `json.dumps()`/`json.loads()` when reading/writing these fields.
+- All routes live in `app.py`. Admin routes are protected by the `@admin_required` decorator (session-based auth).
+- Templates extend `base.html`. Admin templates are prefixed `admin_*.html`.
+- PDFs are saved to `uploads/` with a unix-timestamp suffix for uniqueness.
 
 ## Environment Variables
 
 - `ADMIN_PASSWORD` — Admin panel password (default: `workshop2024`)
 - `SECRET_KEY` — Flask session secret (default: `dev-secret-key-change-me`)
-
-## Commands
-
-- Run: `python app.py`
-- Install deps: `pip install -r requirements.txt`

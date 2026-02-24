@@ -24,6 +24,40 @@
         {% endfor %}
     </div>
 
+    <details class="scoring-explainer">
+        <summary class="btn btn-sm btn-secondary">How ATS Scoring Works</summary>
+        <div class="scoring-explainer-body">
+            <h3>Pipeline</h3>
+            <ol>
+                <li><strong>Text extraction</strong> — PDF text is pulled out page-by-page with pdfplumber.</li>
+                <li><strong>Normalization</strong> — Both the CV text and each keyword are lowercased, special characters (except <code>/</code> <code>+</code> <code>#</code>) are replaced with spaces, and whitespace is collapsed.</li>
+                <li><strong>Substring matching</strong> — Each keyword is checked as a substring of the normalized CV text. No stemming, no synonyms, no fuzzy matching.</li>
+                <li><strong>Score</strong> — <code>matched keywords &divide; total keywords &times; 100</code>, rounded to one decimal.</li>
+            </ol>
+            <h3>Score thresholds</h3>
+            <table class="table">
+                <thead><tr><th>Range</th><th>Color</th><th>Label</th></tr></thead>
+                <tbody>
+                    <tr><td>&ge; 70 %</td><td><span class="score-badge score-high">green</span></td><td>High match</td></tr>
+                    <tr><td>40 – 69 %</td><td><span class="score-badge score-medium">orange</span></td><td>Medium match</td></tr>
+                    <tr><td>&lt; 40 %</td><td><span class="score-badge score-low">red</span></td><td>Low match</td></tr>
+                </tbody>
+            </table>
+            <h3>Keywords per job</h3>
+            <ul>
+                {% for id, job in job_ads.items() %}
+                <li><strong>{{ job.title }}</strong> ({{ job.company }}) — {{ job.keywords|length }} keywords</li>
+                {% endfor %}
+            </ul>
+            <h3>Limitations</h3>
+            <ul>
+                <li>Exact substring only — "React.js" in a CV won't match keyword <code>react</code> if the dot is stripped differently.</li>
+                <li>All keywords are weighted equally (no priority tiers).</li>
+                <li>No semantic understanding — "built web UIs" won't match <code>frontend</code>.</li>
+            </ul>
+        </div>
+    </details>
+
     {% if candidates %}
     <div class="table-responsive">
         <table class="table">
